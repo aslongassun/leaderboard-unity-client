@@ -12,8 +12,11 @@ public class UIManager : MonoBehaviour {
 
 	public Button login;
 	public Button register;
-	public Text username;
-	public Text password;
+
+	public InputField loginUsername;
+	public InputField loginPassword;
+	public InputField createUsername;
+	public InputField createPassword;
 
 	public GameObject scoreEntry;
 	public GameObject scrollContent;
@@ -21,69 +24,77 @@ public class UIManager : MonoBehaviour {
 	public GameObject adminScoreEntry;
 	public GameObject adminScrollContent;
 
-	private ArrayList scoreInfos;
-	private ArrayList adminScoreInfos;
+	//private ArrayList scoreInfos;
+	//private ArrayList adminScoreInfos;
 
-	void Start(){
-		
-		scoreInfos = new ArrayList (){
-			new ScoreInfo("User1","1000"),
-			new ScoreInfo("User1","1100"),
-			new ScoreInfo("User1","1200"),
-			new ScoreInfo("User1","1000"),
-			new ScoreInfo("User1","1100"),
-			new ScoreInfo("User1","1200"),
-			new ScoreInfo("User1","1000"),
-			new ScoreInfo("User1","1100"),
-			new ScoreInfo("User1","1200"),
-			new ScoreInfo("User1","1100"),
-			new ScoreInfo("User1","1200"),
-			new ScoreInfo("User1","1000"),
-			new ScoreInfo("User1","1100"),
-			new ScoreInfo("User1","1200")
-		};
+	public User[] userBoardArray;
+	public User loginUser;
+	public InputField usernameUpdateField;
+	public InputField scoreUpdateField;
+
+	public Text adminBoardMessage;
+
+	public Dropdown minutesDropdown;
+
+
+
+	public void onChangeMinutesDropdown(int value){
+		Debug.Log ("value:" + value);
+		RequestManager.GetInstance ().CallGetUsers ();
+	}
+
+	public void updateAdminBoard(){
+
+		while(adminScrollContent.transform.childCount > 0) {
+			Transform c = adminScrollContent.transform.GetChild(0);
+			c.SetParent(null);
+			Destroy (c.gameObject);
+		}
+
+		foreach(User info in userBoardArray){
+			GameObject newScoreEntry = Instantiate(adminScoreEntry);
+			newScoreEntry.transform.Find ("Username").GetComponent<Text> ().text = info.name;
+			newScoreEntry.transform.Find ("Timesupdate").GetComponent<Text> ().text = info.updatecounter;
+			newScoreEntry.transform.Find ("Lastupdate").GetComponent<Text> ().text = info.updatedAt;
+
+			newScoreEntry.transform.Find ("Button").GetComponent<Button> ().onClick.AddListener(delegate{actionRemoveUser(info._id);});
+
+			newScoreEntry.transform.parent = adminScrollContent.transform;
+		}
+
+		adminBoardMessage.text = "Number of users:" + userBoardArray.Length;
+	}
+
+
+
+	public void updateUserBoard(){
+
+		while(scrollContent.transform.childCount > 0) {
+			Transform c = scrollContent.transform.GetChild(0);
+			c.SetParent(null);
+			Destroy (c.gameObject);
+		}
 
 		int countRank = 1;
-		foreach(ScoreInfo info in scoreInfos){
+		foreach(User info in userBoardArray){
 			GameObject newScoreEntry = Instantiate(scoreEntry);
 			newScoreEntry.transform.Find ("Rank").GetComponent<Text> ().text = countRank.ToString();
-			newScoreEntry.transform.Find ("Username").GetComponent<Text> ().text = info.username;
+			newScoreEntry.transform.Find ("Username").GetComponent<Text> ().text = info.name;
 			newScoreEntry.transform.Find ("Score").GetComponent<Text> ().text = info.score;
 			newScoreEntry.transform.parent = scrollContent.transform;
 			countRank++;
 		}
 
-		adminScoreInfos = new ArrayList (){
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1000","2","2018/01/01 10:10:10"),
-			new ScoreInfo("User1","1200","3","2018/01/01 10:10:10")
-		};
+	}
 
-		foreach(ScoreInfo info in adminScoreInfos){
-			GameObject newScoreEntry = Instantiate(adminScoreEntry);
-			newScoreEntry.transform.Find ("Username").GetComponent<Text> ().text = info.username;
-			newScoreEntry.transform.Find ("Timesupdate").GetComponent<Text> ().text = info.timesupdate;
-			newScoreEntry.transform.Find ("Lastupdate").GetComponent<Text> ().text = info.lastupdate;
-			newScoreEntry.transform.parent = adminScrollContent.transform;
-		}
+	public void actionRemoveUser(string userId){
+		Debug.Log ("Remove action!");
+		RequestManager.GetInstance ().CallRemoveUser(userId);
 	}
 
 	public void actionLogin(){
 		Debug.Log ("Login action!");
-		loginWindow.SetActive (false);
-		if (username.text == "admin" && password.text == "admin") {
-			adminWindow.SetActive (true);
-		} else {
-			userWindow.SetActive (true);
-		}
-
+		RequestManager.GetInstance ().CallLogin (loginUsername.text,loginPassword.text);
 	}
 
 	public void actionRegister(){
@@ -95,11 +106,17 @@ public class UIManager : MonoBehaviour {
 	public void actionCreateUser(){
 		Debug.Log ("Create user action!");
 		registerWindow.SetActive (false);
-		userWindow.SetActive (true);
+		loginWindow.SetActive (true);
+
+		RequestManager.GetInstance ().CallCreateUser (createUsername.text,createPassword.text);
+
 	}
 
 	public void updateScore(){
 		Debug.Log ("Update user score!");
+		loginUser.name = usernameUpdateField.text;
+		loginUser.score = scoreUpdateField.text;
+		RequestManager.GetInstance ().CallUpdateUser (loginUser._id);
 	}
 
 	public void gotoLoginWindow(){
@@ -107,5 +124,6 @@ public class UIManager : MonoBehaviour {
 		registerWindow.SetActive (false);
 		adminWindow.SetActive (false);
 		loginWindow.SetActive (true);
+		CancelInvoke ();
 	}
 }
