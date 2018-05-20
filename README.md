@@ -14,14 +14,14 @@ These instructions will get you a copy of the project up and running on your loc
 ### Installing
 
 1) Get source from Github: $ git clone https://github.com/aslongassun/leaderboard-unity-client.git <br />
-2) Open project and configure Server url and Port in RequestManager.cs file <br />
+2) Open project and configure Server Url and Port in RequestManager.cs file <br />
 
 - If you run server on local host: <br />
   private static string _Url = "http://localhost"; <br />
-	private static string _Port = ":" + "3000"; <br />
+  private static string _Port = ":" + "3000"; <br />
 - If you run server on a clound such as heroku:
   private static string _Url = "https://[appname].herokuapp.com";
-	private static string _Port = "";
+  private static string _Port = "";
   
 3) That'is enough for you, run application on Destop or Mobile.<br />
 
