@@ -25,4 +25,11 @@ These instructions will get you a copy of the project up and running on your loc
   
 3) That'is enough for you, run application on Destop or Mobile.<br />
 
+### How To Test
+- Currently app send request to server with the url: <br/>
+  https://vinhua-nodejs.herokuapp.com <br/>
+- The server conneted to online Mongodb on [mlab](https://mlab.com/)<br/>
+- You can login app with two role Admin or User<br/>
+- User Admin was created with login info username/password: admin/admin<br/>
+- You can create user with Register button then Login to application to test<br/>
 
