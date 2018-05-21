@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1) Get source from Github<br />
 ```
-$ git clone https://github.com/aslongassun/leaderboard-unity-client.git <br />
+$ git clone https://github.com/aslongassun/leaderboard-unity-client.git
 ```
 2) Open project and configure Server _Url and _Port in /Asset/Scripts/RequestManager.cs file <br />
 ```
@@ -31,8 +31,9 @@ private static string _Port = ":" + "3000";
 ```
 
 3) Create user with Role Admin to manage user on scoreboard<br />
-On: [Nodejs-Redis](https://github.com/aslongassun/nodejs-redis)<br />
+If you use NodeJs - Redis server: [Nodejs-Redis](https://github.com/aslongassun/nodejs-redis)<br />
 Edit /User/UserController.js file<br />
+
 From:<br />
 ```
 var userInfo = JSON.stringify({
@@ -95,10 +96,11 @@ res.status(200).send(userInfo);
 console.log(userInfo);
 });
 ```
-Then run the server and register user -> now this user when registed by this app will have Admin role<br />
+Then run the server and register user -> now this user when registed by this app will have Admin Role<br />
 
-On: [Nodejs-MongoDB](https://github.com/aslongassun/nodejs-mongodb)
+If you use NodeJs - MongoDB server: [Nodejs-MongoDB](https://github.com/aslongassun/nodejs-mongodb)
 Edit /User/UserController.js file<br />
+
 From:<br />
 ```
 // create user
@@ -140,6 +142,8 @@ router.post('/', function (req, res) {
 Then run the server and register user -> now this user when registed by this app will have Admin role<br />
 
 4) Reverse the source and re-run server to create user with Role User<br />
+
+5) Now it's the time to test and learn. 
 
 
 
