@@ -6,12 +6,16 @@ using UnityEngine.Networking;
 public class RequestManager : MonoBehaviour {
 	
 	// Local host
-	//private static string _Url = "http://localhost";
-	//private static string _Port = ":" + "3000";
+	private static string _Url = "http://localhost";
+	private static string _Port = ":" + "3000";
 
-	// Clound host
-	private static string _Url = "https://vinhua-nodejs.herokuapp.com";
-	private static string _Port = "";
+	//Heroku with connect to MongoDB database
+	//private static string _Url = "https://vinhua-nodejs.herokuapp.com";
+	//private static string _Port = "";
+
+	// Heroku with Redis
+	//private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
+	//private static string _Port = "";
 
 	// Canvas ui
 	public UIManager ui;
@@ -21,6 +25,7 @@ public class RequestManager : MonoBehaviour {
 	private static float TIME_UPDATE_LEADERBOARD = 2f;
 	// Instance of RequestManager 
 	private static RequestManager instance;
+
 
 	void Awake(){
 		instance = this;
@@ -78,6 +83,8 @@ public class RequestManager : MonoBehaviour {
 	{
 		
 		UnityWebRequest www = UnityWebRequest.Delete(_Url + _Port + "/users/" + userId);
+
+		float startTime = Time.time;
 		yield return www.Send();
 
 		if (www.isNetworkError)
@@ -89,9 +96,10 @@ public class RequestManager : MonoBehaviour {
 		{
 			if (www.responseCode == 200)
 			{
+				getSpentTimesForRequest (startTime, "Delete User");
 				// Response code 200 signifies that the server had no issues with the data we went
 				// Waiting for invoke method call
-				//CallGetUsers ();
+				CallGetUsers ();
 			}
 			else
 			{
@@ -111,8 +119,8 @@ public class RequestManager : MonoBehaviour {
 		byte[] myData = System.Text.Encoding.UTF8.GetBytes("name=" + ui.loginUser.name + "&score=" + ui.loginUser.score+ "&updatecounter=" + ui.loginUser.updatecounter);
 		UnityWebRequest www = UnityWebRequest.Put(_Url + _Port + "/users/" + ui.loginUser._id, myData);
 		www.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
 		// Send the request and yield until the send completes
+		float startTime = Time.time;
 		yield return www.Send();
 
 		if (www.isNetworkError)
@@ -124,8 +132,9 @@ public class RequestManager : MonoBehaviour {
 		{
 			if (www.responseCode == 200)
 			{
+				getSpentTimesForRequest (startTime, "Update User");
 				// Waiting for invoke method call
-				// CallGetUsers ();
+				CallGetUsers ();
 			}
 			else
 			{
@@ -149,6 +158,7 @@ public class RequestManager : MonoBehaviour {
 		UnityWebRequest www = UnityWebRequest.Post(_Url  + _Port + "/users/login", form);
 
 		// Send the request and yield until the send completes
+		float startTime = Time.time;
 		yield return www.Send();
 
 		if (www.isNetworkError)
@@ -160,8 +170,10 @@ public class RequestManager : MonoBehaviour {
 		{
 			if (www.responseCode == 200)
 			{
+				getSpentTimesForRequest (startTime, "Login");
 				
 				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
+				//string jsonFromServer = www.downloadHandler.text;
 				ui.loginUser = JsonHelper.FromJson<User>(jsonFromServer)[0];
 				ui.loginWindow.SetActive (false);
 				if (ui.loginUser.role == "admin") {
@@ -172,7 +184,8 @@ public class RequestManager : MonoBehaviour {
 				ui.usernameUpdateField.text = ui.loginUser.name;
 				ui.scoreUpdateField.text = ui.loginUser.score;
 
-				InvokeRepeating("CallGetUsers", 0f, TIME_UPDATE_LEADERBOARD);
+				//InvokeRepeating("CallGetUsers", 0f, TIME_UPDATE_LEADERBOARD);
+				CallGetUsers();
 
 				ui.loginMessage.text = "";
 				ui.loginMessageWrapper.SetActive (false);
@@ -204,6 +217,8 @@ public class RequestManager : MonoBehaviour {
 		// Create a POST web request with our form data
 		UnityWebRequest www = UnityWebRequest.Post(_Url + _Port + "/users", form);
 		// Send the request and yield until the send completes
+
+		float startTime = Time.time;
 		yield return www.Send();
 
 		if (www.isNetworkError)
@@ -218,6 +233,7 @@ public class RequestManager : MonoBehaviour {
 				// Response code 200 signifies that the server had no issues with the data we went
 				// Waiting for invoke method call
 				// CallGetUsers ();
+				getSpentTimesForRequest (startTime,"Create User");
 			}
 			else
 			{
@@ -226,7 +242,7 @@ public class RequestManager : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	/// <summary>
 	/// Send request to get list users from database
 	/// </summary>
@@ -250,6 +266,7 @@ public class RequestManager : MonoBehaviour {
 
 		UnityWebRequest www = UnityWebRequest.Get (urlGet);
 		// Send the request and yield until the send completes
+		float startTime = Time.time;
 		yield return www.Send();
 
 		if (www.isNetworkError)
@@ -261,6 +278,8 @@ public class RequestManager : MonoBehaviour {
 		{
 			if (www.responseCode == 200)
 			{
+				getSpentTimesForRequest (startTime, "Get Users");
+
 				// Response code 200 signifies that the server had no issues with the data we went
 				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
 				ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
@@ -277,4 +296,13 @@ public class RequestManager : MonoBehaviour {
 			}
 		}
 	}
+
+	/// <summary>
+	/// Calculate time from send request to get respone by second
+	/// </summary>
+	private void getSpentTimesForRequest(float startTime, string methodName){
+		float dentalTime = Time.time - startTime;
+		Debug.Log ("Spent Times " + methodName + ": " + dentalTime + "s");
+	}
+
 }
