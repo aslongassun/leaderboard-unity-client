@@ -24,7 +24,7 @@ public class RequestManager : MonoBehaviour {
 	// Dropdow values
 	public enum MinutesTime {ALL,ONE,FIVE,TEN};
 	// Loop times to invoke update scoreboard
-	private static float TIME_UPDATE_LEADERBOARD = 0.5f;
+	private static float TIME_UPDATE_LEADERBOARD = 1f;
 	// Instance of RequestManager 
 	private static RequestManager instance;
 

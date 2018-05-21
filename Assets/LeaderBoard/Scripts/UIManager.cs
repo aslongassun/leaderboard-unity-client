@@ -55,7 +55,9 @@ public class UIManager : MonoBehaviour {
 	/// Trigger event onchange dropdown
 	/// </summary>
 	public void onChangeMinutesDropdown(int value){
-		RequestManager.GetInstance ().CallGetUsers ();
+		//RequestManager.GetInstance ().CallGetUsers ();
+		// Waiting for auto update
+		return;
 	}
 
 	/// <summary>
