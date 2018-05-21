@@ -276,9 +276,7 @@ public class RequestManager : MonoBehaviour {
 		// Send the request and yield until the send completes
 		float startTime = Time.time;
 
-		ui.loadingView.SetActive (true);
 		yield return www.Send();
-		ui.loadingView.SetActive (false);
 
 		if (www.isNetworkError)
 		{
