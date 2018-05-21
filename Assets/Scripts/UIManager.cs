@@ -12,6 +12,8 @@ public class UIManager : MonoBehaviour {
 	public GameObject userWindow;
 	// Canvas admin score board window
 	public GameObject adminWindow;
+	// Canvas loading view
+	public GameObject loadingView;
 	// Button login
 	public Button login;
 	// Button register
