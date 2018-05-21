@@ -61,14 +61,6 @@ public class RequestManager : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Get all user in database
-	/// </summary>
-	public void CallGetUsers()
-	{
-		StartCoroutine(SubmitGetUsers());
-	}
-
-	/// <summary>
 	/// Update user by user id
 	/// </summary>
 	public void CallUpdateUser(string userId){
@@ -193,7 +185,6 @@ public class RequestManager : MonoBehaviour {
 				getSpentTimesForRequest (startTime, "Login");
 				
 				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
-				//string jsonFromServer = www.downloadHandler.text;
 				ui.loginUser = JsonHelper.FromJson<User>(jsonFromServer)[0];
 				ui.loginWindow.SetActive (false);
 				if (ui.loginUser.role == "admin") {
@@ -228,7 +219,24 @@ public class RequestManager : MonoBehaviour {
 	/// Get users by SocketIO
 	/// </summary>
 	private void GetUsersBySocket(){
-		socket.Emit("getusers",JSONObject.CreateStringObject("{'type':'nameVal','fruit':'msg'}"));
+		int minutes_admin_scoreboard = 0;
+		if (ui.loginUser.role == "admin") {
+			switch ((MinutesTime)ui.minutesDropdown.value) {
+				case MinutesTime.ONE:
+					minutes_admin_scoreboard = 1;
+					break;
+				case MinutesTime.FIVE:
+					minutes_admin_scoreboard = 5;
+					break;
+				case MinutesTime.TEN:
+					minutes_admin_scoreboard = 10;
+					break;
+			}
+			socket.Emit("getusers-from-admin",JSONObject.CreateStringObject(minutes_admin_scoreboard.ToString()));
+		} else {
+			socket.Emit("getusers");
+		}
+
 	}
 
 	/// <summary>
@@ -277,63 +285,6 @@ public class RequestManager : MonoBehaviour {
 			{
 				// Response code 200 signifies that the server had no issues with the data we went
 				getSpentTimesForRequest (startTime,"Create User");
-			}
-			else
-			{
-				// Any other response signifies that there was an issue with the data we sent
-				Debug.Log("Error response code:" + www.responseCode.ToString());
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Send request to get list users from database
-	/// </summary>
-	private IEnumerator SubmitGetUsers(){
-		
-		string urlGet = _Url + _Port + "/users";
-		if (ui.loginUser.role == "admin") {
-			urlGet = urlGet + "/admin";
-			switch ((MinutesTime)ui.minutesDropdown.value) {
-				case MinutesTime.ONE:
-					urlGet += "/" + 1;
-					break;
-				case MinutesTime.FIVE:
-					urlGet += "/" + 5;
-					break;
-				case MinutesTime.TEN:
-					urlGet += "/" + 10;
-					break;
-			}
-		}
-
-		UnityWebRequest www = UnityWebRequest.Get (urlGet);
-		// Send the request and yield until the send completes
-		float startTime = Time.time;
-
-		yield return www.Send();
-
-		if (www.isNetworkError)
-		{
-			// There was an error
-			Debug.Log(www.error);
-		}
-		else
-		{
-			if (www.responseCode == 200)
-			{
-				getSpentTimesForRequest (startTime, "Get Users");
-
-				// Response code 200 signifies that the server had no issues with the data we went
-				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
-				Debug.Log ("==jsonFromServer==");
-				Debug.Log (jsonFromServer);
-				ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
-				if (ui.loginUser.role == "admin") {
-					ui.updateAdminBoard ();
-				} else {
-					ui.updateUserBoard ();
-				}
 			}
 			else
 			{
