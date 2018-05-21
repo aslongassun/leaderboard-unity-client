@@ -3,32 +3,45 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using SocketIO;
+
 public class RequestManager : MonoBehaviour {
 	
 	// Local host
-	//private static string _Url = "http://localhost";
-	//private static string _Port = ":" + "3000";
+	private static string _Url = "http://localhost";
+	private static string _Port = ":" + "3000";
 
 	//Heroku with connect to MongoDB database
 	//private static string _Url = "https://vinhua-nodejs.herokuapp.com";
 	//private static string _Port = "";
 
 	// Heroku with Redis
-	private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
-	private static string _Port = "";
+	//private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
+	//private static string _Port = "";
 
 	// Canvas ui
 	public UIManager ui;
 	// Dropdow values
 	public enum MinutesTime {ALL,ONE,FIVE,TEN};
 	// Loop times to invoke update scoreboard
-	private static float TIME_UPDATE_LEADERBOARD = 2f;
+	private static float TIME_UPDATE_LEADERBOARD = 0.5f;
 	// Instance of RequestManager 
 	private static RequestManager instance;
 
+	private SocketIOComponent socket;
 
 	void Awake(){
 		instance = this;
+	}
+	public void Start() 
+	{
+		// Open socket
+		GameObject go = GameObject.Find("SocketIO");
+		socket = go.GetComponent<SocketIOComponent>();
+		socket.On("open", socketOnOpen);
+		socket.On("receiveusers",SocketOnReceiveUsers);
+		socket.On("error", socketOnError);
+		socket.On("close", socketOnClose);
 	}
 
 	/// <summary>
@@ -102,7 +115,7 @@ public class RequestManager : MonoBehaviour {
 				getSpentTimesForRequest (startTime, "Delete User");
 				// Response code 200 signifies that the server had no issues with the data we went
 				// Waiting for invoke method call
-				CallGetUsers ();
+				//CallGetUsers ();
 			}
 			else
 			{
@@ -138,7 +151,7 @@ public class RequestManager : MonoBehaviour {
 			if (www.responseCode == 200)
 			{
 				getSpentTimesForRequest (startTime, "Update User");
-				CallGetUsers ();
+				//CallGetUsers ();
 			}
 			else
 			{
@@ -191,9 +204,10 @@ public class RequestManager : MonoBehaviour {
 				ui.usernameUpdateField.text = ui.loginUser.name;
 				ui.scoreUpdateField.text = ui.loginUser.score;
 
-				InvokeRepeating("CallGetUsers", 0f, TIME_UPDATE_LEADERBOARD);
+				//InvokeRepeating("CallGetUsers", 0f, TIME_UPDATE_LEADERBOARD);
 				//CallGetUsers();
-
+				InvokeRepeating("GetUsersBySocket", 0f, TIME_UPDATE_LEADERBOARD);
+				//GetUsersBySocket();
 				ui.loginMessage.text = "";
 				ui.loginMessageWrapper.SetActive (false);
 
@@ -207,6 +221,27 @@ public class RequestManager : MonoBehaviour {
 				// Any other response signifies that there was an issue with the data we sent
 				Debug.Log("Error response code:" + www.responseCode.ToString());
 			}
+		}
+	}
+
+	/// <summary>
+	/// Get users by SocketIO
+	/// </summary>
+	private void GetUsersBySocket(){
+		socket.Emit("getusers",JSONObject.CreateStringObject("{'type':'nameVal','fruit':'msg'}"));
+	}
+
+	/// <summary>
+	/// Receive data from SocketIO
+	/// </summary>
+	public void SocketOnReceiveUsers(SocketIOEvent e){
+		ObjectFromSocket objectSocket = JsonUtility.FromJson<ObjectFromSocket>(e.data.ToString());
+		string jsonFromServer = JsonHelper.fixJsonFromServer(objectSocket.items);
+		ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
+		if (ui.loginUser.role == "admin") {
+			ui.updateAdminBoard ();
+		} else {
+			ui.updateUserBoard ();
 		}
 	}
 
@@ -291,6 +326,8 @@ public class RequestManager : MonoBehaviour {
 
 				// Response code 200 signifies that the server had no issues with the data we went
 				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
+				Debug.Log ("==jsonFromServer==");
+				Debug.Log (jsonFromServer);
 				ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
 				if (ui.loginUser.role == "admin") {
 					ui.updateAdminBoard ();
@@ -314,4 +351,27 @@ public class RequestManager : MonoBehaviour {
 		Debug.Log ("Spent Times " + methodName + ": " + dentalTime + "s");
 	}
 
+	/// <summary>
+	/// Call when Socket open
+	/// </summary>
+	public void socketOnOpen(SocketIOEvent e)
+	{
+		Debug.Log("SocketIO open received: " + e.name + " " + e.data);
+	}
+
+	/// <summary>
+	/// Call when Socket error
+	/// </summary>
+	public void socketOnError(SocketIOEvent e)
+	{
+		Debug.Log("SocketIO error received: " + e.name + " " + e.data);
+	}
+
+	/// <summary>
+	/// Call when Socket Close
+	/// </summary>
+	public void socketOnClose(SocketIOEvent e)
+	{	
+		Debug.Log("SocketIO close received: " + e.name + " " + e.data);
+	}
 }
