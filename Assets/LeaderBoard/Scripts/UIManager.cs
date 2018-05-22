@@ -36,6 +36,8 @@ public class UIManager : MonoBehaviour {
 	public GameObject adminScrollContent;
 	// List users show on score board
 	public User[] userBoardArray;
+	// List users show on score board
+	public User[] adminBoardArray;
 	// Current login user
 	public User loginUser;
 	// Update field username
@@ -71,7 +73,7 @@ public class UIManager : MonoBehaviour {
 			Destroy (c.gameObject);
 		}
 
-		foreach(User info in userBoardArray){
+		foreach(User info in adminBoardArray){
 			GameObject newScoreEntry = Instantiate(adminScoreEntry);
 			newScoreEntry.transform.Find ("Username").GetComponent<Text> ().text = info.name;
 			newScoreEntry.transform.Find ("Timesupdate").GetComponent<Text> ().text = info.updatecounter;
@@ -80,7 +82,7 @@ public class UIManager : MonoBehaviour {
 			newScoreEntry.transform.parent = adminScrollContent.transform;
 		}
 
-		adminBoardMessage.text = "result: " + userBoardArray.Length + " users";
+		adminBoardMessage.text = "result: " + adminBoardArray.Length + " users";
 
 	}
 

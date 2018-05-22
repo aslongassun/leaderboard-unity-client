@@ -40,7 +40,6 @@ public class RequestManager : MonoBehaviour {
 		socket = go.GetComponent<SocketIOComponent>();
 		socket.On("open", socketOnOpen);
 		socket.On("receiveusers",SocketOnReceiveUsers);
-		socket.On("time", socketOnTime);
 		socket.On("error", socketOnError);
 		socket.On("close", socketOnClose);
 	}
@@ -82,6 +81,60 @@ public class RequestManager : MonoBehaviour {
 		StartCoroutine(SubmitRemoveUser(userId));
 	}
 
+	public void CallGetUsersForAdmin(){
+		StartCoroutine(SubmitGetUsersForAdmin());
+	}
+	/// <summary>
+	/// Send request to get list users for admin from database
+	/// </summary>
+	private IEnumerator SubmitGetUsersForAdmin(){
+		Debug.Log ("SubmitGetUsersForAdmin");
+		string urlGet = _Url + _Port + "/users/admin";
+		switch ((MinutesTime)ui.minutesDropdown.value) {
+			case MinutesTime.ALL:
+				urlGet += "/" + 0;
+				break;
+			case MinutesTime.ONE:
+				urlGet += "/" + 1;
+				break;
+			case MinutesTime.FIVE:
+				urlGet += "/" + 5;
+				break;
+			case MinutesTime.TEN:
+				urlGet += "/" + 10;
+				break;
+		}
+
+		UnityWebRequest www = UnityWebRequest.Get (urlGet);
+		// Send the request and yield until the send completes
+		yield return www.Send();
+
+		if (www.isNetworkError)
+		{
+			// There was an error
+			Debug.Log(www.error);
+		}
+		else
+		{
+			if (www.responseCode == 200)
+			{
+				
+				// Response code 200 signifies that the server had no issues with the data we went
+				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
+				ui.adminBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
+				Debug.Log ("jsonFromServer");
+				Debug.Log (jsonFromServer);
+
+				ui.updateAdminBoard ();
+			}
+			else
+			{
+				// Any other response signifies that there was an issue with the data we sent
+				Debug.Log("Error response code:" + www.responseCode.ToString());
+			}
+		}
+	}
+
 	/// <summary>
 	/// Send request delete to remove user from leaderboard
 	/// </summary>
@@ -108,7 +161,7 @@ public class RequestManager : MonoBehaviour {
 				getSpentTimesForRequest (startTime, "Delete User");
 				// Response code 200 signifies that the server had no issues with the data we went
 				// Waiting for invoke method call
-				//CallGetUsers ();
+				CallGetUsersForAdmin();
 			}
 			else
 			{
@@ -190,6 +243,7 @@ public class RequestManager : MonoBehaviour {
 				ui.loginWindow.SetActive (false);
 				if (ui.loginUser.role == "admin") {
 					ui.adminWindow.SetActive (true);
+					CallGetUsersForAdmin();
 				} else {
 					ui.userWindow.SetActive (true);
 				}
@@ -197,8 +251,8 @@ public class RequestManager : MonoBehaviour {
 				ui.scoreUpdateField.text = ui.loginUser.score;
 
 				//InvokeRepeating("CallGetUsers", 0f, TIME_UPDATE_LEADERBOARD);
-				//CallGetUsers();
-				InvokeRepeating("GetUsersBySocket", 0f, TIME_UPDATE_LEADERBOARD);
+				//CallGetUsersForAdmin();
+				//InvokeRepeating("GetUsersBySocket", 0f, TIME_UPDATE_LEADERBOARD);
 				//GetUsersBySocket();
 				ui.loginMessage.text = "";
 				ui.loginMessageWrapper.SetActive (false);
@@ -253,9 +307,9 @@ public class RequestManager : MonoBehaviour {
 			ui.updateUserBoard ();
 		}
 	}
-	public void socketOnTime(SocketIOEvent e){
-		Debug.Log("SocketIO open received: " + e.name + " " + e.data);
-	}
+
+
+
 	/// <summary>
 	/// Send request to create user
 	/// </summary>
