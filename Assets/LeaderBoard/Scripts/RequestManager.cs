@@ -23,8 +23,6 @@ public class RequestManager : MonoBehaviour {
 	public UIManager ui;
 	// Dropdow values
 	public enum MinutesTime {ALL,ONE,FIVE,TEN};
-	// Loop times to invoke update scoreboard
-	private static float TIME_UPDATE_LEADERBOARD = 1f;
 	// Instance of RequestManager 
 	private static RequestManager instance;
 
@@ -81,15 +79,21 @@ public class RequestManager : MonoBehaviour {
 		StartCoroutine(SubmitRemoveUser(userId));
 	}
 
+	/// <summary>
+	/// Call get user for admin
+	/// </summary>
 	public void CallGetUsersForAdmin(){
 		StartCoroutine(SubmitGetUsersForAdmin());
 	}
+
 	/// <summary>
 	/// Send request to get list users for admin from database
 	/// </summary>
 	private IEnumerator SubmitGetUsersForAdmin(){
-		Debug.Log ("SubmitGetUsersForAdmin");
+		
 		string urlGet = _Url + _Port + "/users/admin";
+
+		// Prepare time parameter
 		switch ((MinutesTime)ui.minutesDropdown.value) {
 			case MinutesTime.ALL:
 				urlGet += "/" + 0;
@@ -106,6 +110,7 @@ public class RequestManager : MonoBehaviour {
 		}
 
 		UnityWebRequest www = UnityWebRequest.Get (urlGet);
+
 		// Send the request and yield until the send completes
 		yield return www.Send();
 
@@ -122,9 +127,6 @@ public class RequestManager : MonoBehaviour {
 				// Response code 200 signifies that the server had no issues with the data we went
 				string jsonFromServer = JsonHelper.fixJsonFromServer(www.downloadHandler.text);
 				ui.adminBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
-				Debug.Log ("jsonFromServer");
-				Debug.Log (jsonFromServer);
-
 				ui.updateAdminBoard ();
 			}
 			else
@@ -160,7 +162,6 @@ public class RequestManager : MonoBehaviour {
 			{
 				getSpentTimesForRequest (startTime, "Delete User");
 				// Response code 200 signifies that the server had no issues with the data we went
-				// Waiting for invoke method call
 				CallGetUsersForAdmin();
 			}
 			else
@@ -197,7 +198,6 @@ public class RequestManager : MonoBehaviour {
 			if (www.responseCode == 200)
 			{
 				getSpentTimesForRequest (startTime, "Update User");
-				//CallGetUsers ();
 			}
 			else
 			{
@@ -246,7 +246,9 @@ public class RequestManager : MonoBehaviour {
 					CallGetUsersForAdmin();
 				} else {
 					ui.userWindow.SetActive (true);
+					// Auto update from througth Socket
 				}
+
 				ui.usernameUpdateField.text = ui.loginUser.name;
 				ui.scoreUpdateField.text = ui.loginUser.score;
 
@@ -254,6 +256,7 @@ public class RequestManager : MonoBehaviour {
 				//CallGetUsersForAdmin();
 				//InvokeRepeating("GetUsersBySocket", 0f, TIME_UPDATE_LEADERBOARD);
 				//GetUsersBySocket();
+
 				ui.loginMessage.text = "";
 				ui.loginMessageWrapper.SetActive (false);
 
@@ -269,46 +272,6 @@ public class RequestManager : MonoBehaviour {
 			}
 		}
 	}
-
-	/// <summary>
-	/// Get users by SocketIO
-	/// </summary>
-	private void GetUsersBySocket(){
-		int minutes_admin_scoreboard = 0;
-		if (ui.loginUser.role == "admin") {
-			switch ((MinutesTime)ui.minutesDropdown.value) {
-				case MinutesTime.ONE:
-					minutes_admin_scoreboard = 1;
-					break;
-				case MinutesTime.FIVE:
-					minutes_admin_scoreboard = 5;
-					break;
-				case MinutesTime.TEN:
-					minutes_admin_scoreboard = 10;
-					break;
-			}
-			socket.Emit("getusers-from-admin",JSONObject.CreateStringObject(minutes_admin_scoreboard.ToString()));
-		} else {
-			socket.Emit("getusers");
-		}
-
-	}
-
-	/// <summary>
-	/// Receive data from SocketIO
-	/// </summary>
-	public void SocketOnReceiveUsers(SocketIOEvent e){
-		ObjectFromSocket objectSocket = JsonUtility.FromJson<ObjectFromSocket>(e.data.ToString());
-		string jsonFromServer = JsonHelper.fixJsonFromServer(objectSocket.items);
-		ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
-		if (ui.loginUser.role == "admin") {
-			ui.updateAdminBoard ();
-		} else {
-			ui.updateUserBoard ();
-		}
-	}
-
-
 
 	/// <summary>
 	/// Send request to create user
@@ -348,6 +311,20 @@ public class RequestManager : MonoBehaviour {
 				// Any other response signifies that there was an issue with the data we sent
 				Debug.Log("Error response code:" + www.responseCode.ToString());
 			}
+		}
+	}
+
+	/// <summary>
+	/// Receive data from SocketIO
+	/// </summary>
+	public void SocketOnReceiveUsers(SocketIOEvent e){
+		ObjectFromSocket objectSocket = JsonUtility.FromJson<ObjectFromSocket>(e.data.ToString());
+		string jsonFromServer = JsonHelper.fixJsonFromServer(objectSocket.items);
+		ui.userBoardArray = JsonHelper.FromJson<User>(jsonFromServer);
+		if (ui.loginUser.role == "admin") {
+			ui.updateAdminBoard ();
+		} else {
+			ui.updateUserBoard ();
 		}
 	}
 
