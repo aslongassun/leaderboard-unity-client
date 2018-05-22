@@ -15,9 +15,15 @@ public class RequestManager : MonoBehaviour {
 	//private static string _Url = "https://vinhua-nodejs.herokuapp.com";
 	//private static string _Port = "";
 
+	// Note: Also change socket url in SocketIO prefab to:
+	// Tws://vinhua-nodejs.herokuapp.com/socket.io/?EIO=4&transport=websocket
+
 	// Heroku with Redis
 	//private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
 	//private static string _Port = "";
+
+	// Note: Also change socket url in SocketIO prefab to:
+	// ws://vinhhua-nodejs-redis.herokuapp.com/socket.io/?EIO=4&transport=websocket
 
 	// Canvas ui
 	public UIManager ui;
