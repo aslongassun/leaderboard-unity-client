@@ -8,16 +8,16 @@ using SocketIO;
 public class RequestManager : MonoBehaviour {
 	
 	// Local host
-	//private static string _Url = "http://localhost";
-	//private static string _Port = ":" + "3000";
+	private static string _Url = "http://localhost";
+	private static string _Port = ":" + "3000";
 
 	//Heroku with connect to MongoDB database
 	//private static string _Url = "https://vinhua-nodejs.herokuapp.com";
 	//private static string _Port = "";
 
 	// Heroku with Redis
-	private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
-	private static string _Port = "";
+	//private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
+	//private static string _Port = "";
 
 	// Canvas ui
 	public UIManager ui;
@@ -40,6 +40,7 @@ public class RequestManager : MonoBehaviour {
 		socket = go.GetComponent<SocketIOComponent>();
 		socket.On("open", socketOnOpen);
 		socket.On("receiveusers",SocketOnReceiveUsers);
+		socket.On("time", socketOnTime);
 		socket.On("error", socketOnError);
 		socket.On("close", socketOnClose);
 	}
@@ -252,7 +253,9 @@ public class RequestManager : MonoBehaviour {
 			ui.updateUserBoard ();
 		}
 	}
-
+	public void socketOnTime(SocketIOEvent e){
+		Debug.Log("SocketIO open received: " + e.name + " " + e.data);
+	}
 	/// <summary>
 	/// Send request to create user
 	/// </summary>
