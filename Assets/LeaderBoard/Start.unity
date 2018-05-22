@@ -6251,6 +6251,7 @@ MonoBehaviour:
     type: 2}
   adminScrollContent: {fileID: 258072977}
   userBoardArray: []
+  adminBoardArray: []
   loginUser:
     _id: 
     name: 

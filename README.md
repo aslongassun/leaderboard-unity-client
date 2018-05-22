@@ -25,9 +25,18 @@ $ git clone https://github.com/aslongassun/leaderboard-unity-client.git
 private static string _Url = "http://localhost";
 private static string _Port = ":" + "3000";
 
-// Connect to clound
+// Connect to cloud
 //private static string _Url = "https://[appname].herokuapp.com";
 //private static string _Port = "";
+
+Please also change the Socket Url Of SocketIO Prefab in Unity application
+
+Example for local host:
+ws://127.0.0.1:3000/socket.io/?EIO=4&transport=websocket
+
+Example for cloud:
+ws://[appname].herokuapp.com/socket.io/?EIO=4&transport=websocket
+
 ```
 
 3) Create user with Role Admin to manage user on scoreboard<br />
