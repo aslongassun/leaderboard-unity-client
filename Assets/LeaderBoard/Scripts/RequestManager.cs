@@ -8,16 +8,16 @@ using SocketIO;
 public class RequestManager : MonoBehaviour {
 	
 	// Local host
-	private static string _Url = "http://localhost";
-	private static string _Port = ":" + "3000";
+	//private static string _Url = "http://localhost";
+	//private static string _Port = ":" + "3000";
 
 	//Heroku with connect to MongoDB database
 	//private static string _Url = "https://vinhua-nodejs.herokuapp.com";
 	//private static string _Port = "";
 
 	// Heroku with Redis
-	//private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
-	//private static string _Port = "";
+	private static string _Url = "https://vinhhua-nodejs-redis.herokuapp.com";
+	private static string _Port = "";
 
 	// Canvas ui
 	public UIManager ui;
